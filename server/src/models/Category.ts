@@ -4,7 +4,7 @@ interface ICategory extends Document {
   name: string;
   type: "income" | "expense";
   subCategories: string[];
-  userId:Schema.Types.ObjectId
+  userId: Schema.Types.ObjectId;
 }
 
 const categorySchema: Schema<ICategory> = new Schema(
@@ -23,13 +23,13 @@ const categorySchema: Schema<ICategory> = new Schema(
       required: true,
       default: [],
     },
-    userId:{
-        type:Schema.Types.ObjectId,
-        ref:"User",
-        required:true
-    }
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
   { timestamps: true }
 );
 
-export const Category=model<ICategory>('Category',categorySchema)
+export const Category = model<ICategory>("Category", categorySchema);
