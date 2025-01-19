@@ -67,7 +67,7 @@ export const getTransaction = async (
       return res.status(401).json({ message: "User must be Logged In!" });
     }
     const transactionDetails = await transactionDetailsService(transactionId);
-    return res.status(200).json({ transaction: transactionDetails });
+    return res.status(200).json(transactionDetails);
   } catch (error) {
     next(error);
   }

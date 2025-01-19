@@ -4,8 +4,9 @@ import React, { useState } from 'react'
 import { MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
 import { IoNotificationsOutline } from "react-icons/io5";
 import Search from '../ui/Search';
+import { User } from '@/types';
 
-const TopNav = () => {
+const TopNav = ({user}:{user:User | null}) => {
     const [searchTerm, setSearchTerm] = useState("");
     const currentDate=new Date()
 
@@ -14,7 +15,7 @@ const TopNav = () => {
     <section className='w-full h-full flex justfiy-between items-center px-6'>
       <div className="w-full flex flex-col justify-start items-start">
         <h1 className="font-bold text-xl">
-            Hello,Calvin Bukarani
+            Hello, {`${user?.firstName} ${user?.lastName}`}
         </h1>
         <div className="flex items-center justify-center text-neutral-500">
             <span className="text-sm">{formatDate(currentDate)}</span>

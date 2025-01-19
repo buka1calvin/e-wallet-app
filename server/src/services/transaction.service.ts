@@ -64,7 +64,10 @@ export const createTransactionService = async (data: TransactionPayload) => {
 };
 
 export const allUserTransactionsServices = async (userId: string) => {
-  const allTransactions = await Transaction.find({ userId });
+  const allTransactions = await Transaction.find({ userId })
+    .populate("userId", "firstName lastName")
+    .populate("accountId", "name")
+    .populate("categoryId", "name subCategories");
   if (!allTransactions || allTransactions.length <= 0) {
     throw createCustomError(
       "NoTransactionsFound",
@@ -76,7 +79,10 @@ export const allUserTransactionsServices = async (userId: string) => {
 };
 
 export const transactionDetailsService = async (id: string) => {
-  const transaction = await Transaction.findById({ _id: id });
+  const transaction = await Transaction.findById({ _id: id })
+    .populate("userId", "firstName lastName")
+    .populate("accountId", "name")
+    .populate("categoryId", "name subCategories");
   if (!transaction) {
     throw createCustomError(
       "NoTransaction",
@@ -93,14 +99,21 @@ export const updateUserTransactionService = async (
 ) => {
   const { userId, categoryId, description, amount, accountId, date, type } =
     data;
-  const transaction = await Transaction.findOne({ userId, _id: transactionId });
+  const transaction = await Transaction.findOne({ userId, _id: transactionId })
+    .populate("userId", "firstName lastName")
+    .populate("accountId", "name")
+    .populate("categoryId", "name subCategories");
   const category = await Category.findOne({ _id: categoryId, userId });
-  const account = accountId ? await Account.findOne({ _id: accountId, userId }) : await Account.findOne({_id:transaction?.accountId,userId})
-  console.log("account==",account)
+  const account = accountId
+    ? await Account.findOne({ _id: accountId, userId })
+    : await Account.findOne({ _id: transaction?.accountId, userId });
+  console.log("account==", account);
   if (!account) {
     throw createCustomError(
       "account_not_found",
-      `Account with ID=${accountId || transaction?.accountId} does not exist or does not belong to the user.`,
+      `Account with ID=${
+        accountId || transaction?.accountId
+      } does not exist or does not belong to the user.`,
       404
     );
   }
@@ -120,7 +133,7 @@ export const updateUserTransactionService = async (
         400
       );
     }
-    let updatedBalance=account.balance
+    let updatedBalance = account.balance;
     if (type === "expense" && amount !== transaction.amount && account) {
       if (account.balance < amount) {
         throw createCustomError(
@@ -134,7 +147,7 @@ export const updateUserTransactionService = async (
     if (type === "income" && amount !== transaction.amount && account) {
       updatedBalance += amount - transaction.amount;
     }
-   await Account.findByIdAndUpdate(
+    await Account.findByIdAndUpdate(
       account._id,
       { balance: updatedBalance },
       { new: true, runValidators: true }

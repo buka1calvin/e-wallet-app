@@ -2,6 +2,13 @@ import type { Metadata } from "next";
 import { Lato } from "next/font/google";
 import "./globals.css";
 import { ReactQueryProvider } from "@/lib/providers/Store";
+import { Toaster } from "react-hot-toast";
+import ScrollToTop from "@/components/ScrollToTop";
+import { AuthProvider } from "../contexts/AuthProvider";
+import { BudgetssProvider } from "@/contexts/BudgetsProvider";
+import { AccountsProvider } from "@/contexts/AccountsProvider";
+import { CategoriesProvider } from "@/contexts/CategoriesProvider";
+import { TransactionsProvider } from "@/contexts/TransactionsProvider";
 
 const lato = Lato({
   subsets: ["latin"],
@@ -20,8 +27,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${lato.className} antialiased flex flex-col justfiy-center items-center w-screen overflow-x-hidden`}>
-        <ReactQueryProvider>{children}</ReactQueryProvider>
+      <body
+        className={`${lato.className} antialiased flex flex-col justfiy-center items-center w-screen overflow-x-hidden`}
+      >
+        <ReactQueryProvider>
+          <AuthProvider>
+            <BudgetssProvider>
+              <AccountsProvider>
+                <CategoriesProvider>
+                  <TransactionsProvider>{children}</TransactionsProvider>
+                  <ScrollToTop />
+                  <Toaster />
+                </CategoriesProvider>
+              </AccountsProvider>
+            </BudgetssProvider>
+          </AuthProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );

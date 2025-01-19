@@ -15,6 +15,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "./ui/button";
 import Link from "next/link";
+import { useUsers } from "@/contexts/AuthProvider";
+import Image from "next/image";
 
 type FormType = "sign-up" | "sign-in";
 
@@ -38,8 +40,8 @@ const AuthFormSchema = (formType: FormType) => {
 };
 
 const AuthForm = ({ type }: { type: FormType }) => {
-  const [loading, setLoading] = useState(false);
   const formSchema = AuthFormSchema(type);
+  const { Signup, isError, isLoading, login } = useUsers();
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -51,9 +53,21 @@ const AuthForm = ({ type }: { type: FormType }) => {
     },
   });
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    setLoading(true);
-    console.log(values);
-    setLoading(false);
+    try {
+      if (type === "sign-up") {
+        Signup({
+          firstName: values.firstName,
+          lastName: values.lastName,
+          telephone: values.telephone,
+          email: values.email,
+          password: values.password,
+        });
+      } else {
+        login(values.email, values.password);
+      }
+    } catch (error) {
+      console.log("error===", error);
+    }
   };
   return (
     <div className="w-full md:h-full">
@@ -66,48 +80,52 @@ const AuthForm = ({ type }: { type: FormType }) => {
             {type === "sign-in" ? "Sign In" : "Sign Up"}
           </h1>
           <div className="flex gap-4">
-          {type === "sign-up" && (
-            <FormField
-              control={form.control}
-              name="firstName"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <div className="">
-                    <FormLabel className="font-semibold text-black">First Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter Your First Name"
-                        className=""
-                        {...field}
-                      />
-                    </FormControl>
-                  </div>
-                  <FormMessage className="" />
-                </FormItem>
-              )}
-            />
-          )}
-          {type === "sign-up" && (
-            <FormField
-              control={form.control}
-              name="lastName"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <div>
-                    <FormLabel className="font-semibold text-black">Last Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter Your Last Name"
-                        className=""
-                        {...field}
-                      />
-                    </FormControl>
-                  </div>
-                  <FormMessage className="" />
-                </FormItem>
-              )}
-            />
-          )}
+            {type === "sign-up" && (
+              <FormField
+                control={form.control}
+                name="firstName"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <div className="">
+                      <FormLabel className="font-semibold text-black">
+                        First Name
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter Your First Name"
+                          className=""
+                          {...field}
+                        />
+                      </FormControl>
+                    </div>
+                    <FormMessage className="" />
+                  </FormItem>
+                )}
+              />
+            )}
+            {type === "sign-up" && (
+              <FormField
+                control={form.control}
+                name="lastName"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <div>
+                      <FormLabel className="font-semibold text-black">
+                        Last Name
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter Your Last Name"
+                          className=""
+                          {...field}
+                        />
+                      </FormControl>
+                    </div>
+                    <FormMessage className="" />
+                  </FormItem>
+                )}
+              />
+            )}
           </div>
           <FormField
             control={form.control}
@@ -115,7 +133,9 @@ const AuthForm = ({ type }: { type: FormType }) => {
             render={({ field }) => (
               <FormItem>
                 <div className="">
-                  <FormLabel className="font-semibold text-black">Email</FormLabel>
+                  <FormLabel className="font-semibold text-black">
+                    Email
+                  </FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Enter Your Email"
@@ -135,7 +155,9 @@ const AuthForm = ({ type }: { type: FormType }) => {
               render={({ field }) => (
                 <FormItem>
                   <div className="">
-                    <FormLabel className="font-semibold text-black">Telephone</FormLabel>
+                    <FormLabel className="font-semibold text-black">
+                      Telephone
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Enter Your Telephone Number"
@@ -155,7 +177,9 @@ const AuthForm = ({ type }: { type: FormType }) => {
             render={({ field }) => (
               <FormItem>
                 <div className="">
-                  <FormLabel className="font-semibold text-black">Password</FormLabel>
+                  <FormLabel className="font-semibold text-black">
+                    Password
+                  </FormLabel>
                   <FormControl>
                     <Input
                       type="password"
@@ -170,8 +194,17 @@ const AuthForm = ({ type }: { type: FormType }) => {
             )}
           />
 
-          <Button type="submit" className="bg-primary mt-4" disabled={loading}>
+          <Button type="submit" className="bg-primary mt-4" disabled={isLoading}>
             {type === "sign-up" ? "Sign Up" : "Sign In"}
+            {isLoading && (
+              <Image
+                src="/icons/loader.svg"
+                alt=""
+                width={20}
+                height={20}
+                className="ml-1 animate-spin"
+              />
+            )}
           </Button>
           <div className="text-sm flex justify-center">
             <p className="text-neutral-500">

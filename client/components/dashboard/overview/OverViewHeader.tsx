@@ -1,61 +1,117 @@
-import OverViewCard from "@/components/ui/OverViewCard";
+"use client";
 import React from "react";
+import { useBudgets } from "@/contexts/BudgetsProvider";
+import OverViewCard from "@/components/ui/OverViewCard";
+import { useTransactions } from "@/contexts/TransactionsProvider";
+import { useAccounts } from "@/contexts/AccountsProvider";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const OverViewHeader = () => {
+  const { budgets } = useBudgets();
+  const { transactions } = useTransactions();
+  const { accounts } = useAccounts();
+
+  const globalBudgets = budgets.filter((budget) => budget.isGlobal === true);
+  const nonGlobalBudgets = budgets.filter((budget) => budget.isGlobal === false);
+  const expenses = transactions.filter(transaction => transaction.type === "expense");
+  const income = transactions.filter(transaction => transaction.type === "income");
+  const totalTransactionsAmount = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+  const expenseAmount = expenses.reduce((sum, transaction) => sum + transaction.amount, 0);
+  const incomeAmount = income.reduce((sum, transaction) => sum + transaction.amount, 0);
+  const totalBalance = accounts.reduce((sum, account) => sum + account.balance, 0);
+  const BudgetSpendings = budgets.reduce((sum, budget) => sum + budget.spent, 0);
+
+  const data = [
+    { name: 'Expenses', amount: expenseAmount },
+    { name: 'Income', amount: incomeAmount },
+  ];
+
   return (
-    <div className="flex gap-4 items-center justify-center w-full">
-      <div className="w-full">
-        <h1 className="text-neutral-500 font-semibold mb-1">Total Balance</h1>
-        <OverViewCard title="Total Balance" total={20000} unit="$">
-          <div className="absolute top-0 left-0 w-14 h-14 bg-gradient-to-r from-[#e4e2e7] to-green-600 rounded-full blur-2xl" />
-          <div className="absolute bottom-0 right-0 w-14 h-14 bg-gradient-to-r from-[#e4e2e7] to-orange-600 rounded-full blur-2xl" />
-          <div className="w-full h-full">
-            <h1 className="text-xl font-bold">account Type:</h1>
+    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div>
+        <OverViewCard title="Total Balance" total={totalBalance} unit="$">
+          <div className="w-full flex flex-col justify-around h-full mt-4">
+            <h1 className="text-lg font-semibold text-neutral-700">Account Breakdown</h1>
             <ul className="list-disc list-inside pl-5 text-sm text-neutral-500">
-              <li className="">Bank</li>
-              <li className="">Mobile Money</li>
-              <li className="">Cash</li>
+              <li>Bank</li>
+              <li>Mobile Money</li>
+              <li>Cash</li>
             </ul>
           </div>
         </OverViewCard>
       </div>
-      <div className="w-full">
-        <h1 className="text-neutral-500 font-semibold mb-1">
-          Total Transactions
-        </h1>
-        <OverViewCard title="Total Transaction" total={20000} unit="$">
-          <div className="absolute top-0 left-0 w-14 h-14 bg-gradient-to-r from-[#e4e2e7] to-green-600 rounded-full blur-2xl" />
-          <div className="absolute bottom-0 right-0 w-14 h-14 bg-gradient-to-r from-[#e4e2e7] to-orange-600 rounded-full blur-2xl" />
+
+      <div>
+        <OverViewCard title="Total Transactions" total={totalTransactionsAmount} unit="$">
           <div className="w-full h-full mt-2">
-            <div className="shadow-inner text-sm bg-neutral-100 mb-2 flex justify-between py-2 px-2 rounded">
-              <h1 className="font-semibold">Expenses</h1>
-              <p className="text-neutral-500">10000rwf</p>
-            </div>
-            <div className="shadow-inner text-sm bg-neutral-100 flex justify-between py-2 px-2 rounded">
-              <h1 className="font-semibold">Income</h1>
-              <p className="text-neutral-500">10000rwf</p>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="amount" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="mt-4">
+              <div className="shadow-inner text-sm bg-neutral-100 mb-2 flex justify-between py-2 px-2 rounded">
+                <h1 className="font-semibold">Expenses</h1>
+                <p className="text-neutral-500">${expenseAmount}</p>
+              </div>
+              <div className="shadow-inner text-sm bg-neutral-100 flex justify-between py-2 px-2 rounded">
+                <h1 className="font-semibold">Income</h1>
+                <p className="text-neutral-500">${incomeAmount}</p>
+              </div>
             </div>
           </div>
         </OverViewCard>
       </div>
-      <div className="w-full">
-        <h1 className="text-neutral-500 font-semibold mb-1">Total Budgets</h1>
-        <OverViewCard title="Total Balance" total={20000} unit="">
-          <div className="absolute top-0 left-0 w-14 h-14 bg-gradient-to-r from-[#e4e2e7] to-green-600 rounded-full blur-2xl" />
-          <div className="absolute bottom-0 right-0 w-14 h-14 bg-gradient-to-r from-[#e4e2e7] to-orange-600 rounded-full blur-2xl" />
-          <div className="flex items-center justify-between h-full w-full mt-5">
-            <div className="bg-neutral-200 px-2 rounded-lg flex flex-col items-center">
-              <p className="text-xs text-neutral-500">May</p>
-              <h1 className="font-extrabold text-lg">15</h1>
+      <div>
+        <OverViewCard title="Total Budgets" total={budgets.length} unit="">
+          <div className="w-full flex flex-col justify-between h-full mt-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="font-bold text-lg">All My Budgets</p>
+                <p className="text-sm text-neutral-500">Total spent: ${BudgetSpendings}</p>
+              </div>
+              <div className="flex gap-2">
+                <div className="bg-neutral-200 px-3 py-2 rounded-lg text-center">
+                  <p className="text-xs text-neutral-500">Global</p>
+                  <h1 className="font-extrabold text-lg">{globalBudgets.length}</h1>
+                </div>
+                <div className="bg-neutral-200 px-3 py-2 rounded-lg text-center">
+                  <p className="text-xs text-neutral-500">Non-Global</p>
+                  <h1 className="font-extrabold text-lg">{nonGlobalBudgets.length}</h1>
+                </div>
+              </div>
             </div>
-            <div className="flex flex-col text-sm">
-              <h1 className="text-neutral-500">Figma</h1>
-              <p className="font-bold text-lg">Figma-Monthly</p>
-              <p className="text-neutral-400 text-xs">start:17 May - 18 jun</p>
-            </div>
-            <div className="bg-white border p-2 rounded">$150</div>
           </div>
         </OverViewCard>
+      </div>
+
+      <div className="lg:col-span-2 xl:col-span-3">
+        <div className="bg-white p-4 rounded-xl shadow-md border-2 border-secondary/20">
+          <h2 className="font-bold text-lg mb-3 text-neutral-700">Transaction Statistics</h2>
+          <table className="w-full table-auto text-sm">
+            <thead>
+              <tr>
+                <th className="text-left p-2">Transaction Type</th>
+                <th className="text-left p-2">Amount ($)</th>
+                <th className="text-left p-2">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {transactions.map((transaction, index) => (
+                <tr key={index} className="border-b hover:bg-neutral-100">
+                  <td className="p-2">{transaction.type}</td>
+                  <td className="p-2">${transaction.amount}</td>
+                  <td className="p-2">{new Date(transaction.date).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

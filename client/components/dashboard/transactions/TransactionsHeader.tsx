@@ -16,7 +16,7 @@ const TransactionsHeader: FC<transFilter> = ({ handleActive }) => {
     handleActive(filter);
   };
   return (
-    <div className="bg-white w-full h-12 flex items-center justify-between border rounded-md">
+    <div className="bg-white w-full h-12 flex items-center justify-between border rounded-md sticky -top-5">
       <div className="h-full">
         {filters.map((filter) => (
           <button
@@ -36,7 +36,7 @@ const TransactionsHeader: FC<transFilter> = ({ handleActive }) => {
       <div className="flex items-center gap-4">
         <Input type="text" placeholder="Search any Transaction..." />
         <CustomDialog
-          customStyle="bg-primary w-full"
+          customStyle="bg-primary w-full h-10 text-white"
           button="Create Transaction +"
         >
           <TransactionForm />

@@ -6,17 +6,6 @@ import { createCustomError } from "../utils/errorUtils";
 export const createAccountSevice = async (data: AccountPayload) => {
   const { userId, name, type, accountNumber, balance } = data;
 
-  if (type === "cash") {
-    const existingCashAccount = await Account.findOne({ userId, type: "cash" });
-    if (existingCashAccount) {
-      throw createCustomError(
-        "AccountExistsError",
-        "User already has a cash account.",
-        400
-      );
-    }
-  }
-
   if (accountNumber) {
     const existingAccount = await Account.findOne({ accountNumber });
     if (existingAccount) {
@@ -79,4 +68,13 @@ export const deleteAccountService=async(userId:string,accountId:string)=>{
         message:"Account Deleted Successfully!",
         accountId
     }
+}
+
+export const getAccountService=async(userId:string,accountId:string)=>{
+  const accountExist=await Account.findOne({userId,_id:accountId})
+  if(!accountExist){
+      throw createCustomError("noAccountFound",`No Account Found With Id=${accountId}`,404)
+  }
+  
+  return accountExist
 }

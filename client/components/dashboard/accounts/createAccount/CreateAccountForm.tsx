@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -19,32 +19,65 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useAccounts } from "@/contexts/AccountsProvider";
+import Image from "next/image";
+import { UpdateAccount } from "@/types";
 
 const AccountFormSchema = () => {
   return z.object({
     name: z.string().min(2).max(50),
     type: z.string(),
-    accountNumber: z.string().min(4).optional(),
+    accountNumber: z.string().optional(),
     balance: z.number().default(0),
   });
 };
-const CreateAccountForm = () => {
-  const [loading, setLoading] = useState(false);
+const CreateAccountForm = ({ account }: { account?: UpdateAccount }) => {
+  const { createAccount, isLoading, isError, updateAccount } = useAccounts();
+  const [accType, setAccType] = useState(account?.type || "");
   const formSchema = AccountFormSchema();
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      type: "",
-      accountNumber: "",
-      balance: 0,
+      name: account?.name || "",
+      type: account?.type || "",
+      accountNumber: account?.accountNumber || "",
+      balance: account?.balance || 0,
     },
   });
+
+  useEffect(() => {
+    if (account) {
+      form.reset({
+        name: account?.name,
+        type: account?.type,
+        accountNumber: account?.accountNumber,
+        balance: account?.balance,
+      });
+    }
+  }, [account, form]);
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setLoading(true);
     try {
-    } catch (error) {
-    } finally {
+      if (values.type === "cash") {
+        delete values.accountNumber;
+      }
+      if (account) {
+        updateAccount(account._id, values);
+      }
+      createAccount({
+        name: values.name,
+        type: values.type,
+        accountNumber: values.accountNumber || null,
+        balance: values.balance,
+      });
+      form.reset({
+        name: "",
+        type: "",
+        accountNumber: "",
+        balance: 0,
+      });
+      setAccType("");
+    } catch (error: any) {
+      throw new Error(error);
     }
   };
   return (
@@ -55,7 +88,9 @@ const CreateAccountForm = () => {
           className="flex flex-col justify-center h-full gap-3"
           onSubmit={form.handleSubmit(onSubmit)}
         >
-            <h1 className="text-center font-semibold">Create Account</h1>
+          <h1 className="text-center font-semibold">
+            {account ? "Update Account" : "Create Account"}
+          </h1>
           <FormField
             control={form.control}
             name="name"
@@ -82,7 +117,13 @@ const CreateAccountForm = () => {
               <FormItem>
                 <div className="">
                   <FormControl>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={(value) => {
+                        setAccType(value);
+                        field.onChange(value);
+                      }}
+                      value={field.value}
+                    >
                       <SelectTrigger className="z-[2000]">
                         <SelectValue placeholder="Select Account Type" />
                       </SelectTrigger>
@@ -98,25 +139,27 @@ const CreateAccountForm = () => {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="accountNumber"
-            render={({ field }) => (
-              <FormItem>
-                <div className="">
-                  <FormControl>
-                    <Input
-                      type="text"
-                      placeholder="Enter Account Number"
-                      className=""
-                      {...field}
-                    />
-                  </FormControl>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {accType !== "cash" && (
+            <FormField
+              control={form.control}
+              name="accountNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="">
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="Enter Account Number"
+                        className=""
+                        {...field}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           <FormField
             control={form.control}
             name="balance"
@@ -129,6 +172,7 @@ const CreateAccountForm = () => {
                       placeholder="Enter Account Balance"
                       className=""
                       {...field}
+                      onChange={(e) => field.onChange(e.target.valueAsNumber)}
                     />
                   </FormControl>
                 </div>
@@ -136,8 +180,21 @@ const CreateAccountForm = () => {
               </FormItem>
             )}
           />
-          <Button type="submit" className="bg-primary mt-4" disabled={loading}>
-            Create Account
+          <Button
+            type="submit"
+            className="bg-primary mt-4"
+            disabled={isLoading}
+          >
+            {account ? "Update Account" : "Create Account"}
+            {isLoading && (
+              <Image
+                src="/icons/loader.svg"
+                alt=""
+                width={20}
+                height={20}
+                className="ml-1 animate-spin"
+              />
+            )}
           </Button>
         </form>
       </Form>

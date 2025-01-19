@@ -17,8 +17,12 @@ export const createUser = async (req: Request, res: Response) => {
       telephone,
       password
     };
-    const token: string = generateToken(userData, { expiresIn: "10min" });
+    const userExist=await User.findOne({email})
+    if(userExist){
+      return res.status(403).json({message:"user Email Already Exists!"})
+    }
     const response = await registerUserService(userData);
+    const token: string = generateToken(userData, { expiresIn: "10min" });
     return res.status(201).json({
       user: response,
       message: "User Registered successfully !",
@@ -99,3 +103,17 @@ export const getUser = async (req: Request, res: Response) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+export const logOut=async(req: Request, res: Response,next:NextFunction)=>{
+  try{
+    res.clearCookie('refresh_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+
+    return res.status(200).json({message:"Logout SuccessFul!"})
+  }catch(error){
+    next(error)
+  }
+}

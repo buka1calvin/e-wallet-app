@@ -77,7 +77,7 @@ const XsNavbar = ({onClose}:XsNavbarProps) => {
               "text-lg font-medium py-2 px-4 rounded transition-transform hover:scale-105",
               isActive
                 ? "bg-secondary text-black shadow-md shadow-secondary"
-                : "bg-neutral-800/50 text-white"
+                : "bg-black text-white"
             )}
           >
             {item.title}

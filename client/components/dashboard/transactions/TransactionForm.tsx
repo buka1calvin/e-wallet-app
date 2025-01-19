@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -21,65 +19,94 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useTransactions } from "@/contexts/TransactionsProvider";
+import { useAccounts } from "@/contexts/AccountsProvider";
+import { useCategories } from "@/contexts/CategoriesProvider";
+import Image from "next/image";
+import { UpdateTransaction } from "@/types";
+import { format } from "date-fns";
 
-const AccountFormSchema = () => {
-  return z.object({
-    accountId: z.string().min(2).max(50),
-    categoryId: z.string().min(2).max(50),
-    type: z.string(),
-    amount: z.number().min(4),
-    description: z.string().min(6),
-    date: z
-      .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
-  });
-};
-const TransactionForm = () => {
-  const [loading, setLoading] = useState(false);
-  const formSchema = AccountFormSchema();
+const TransactionFormSchema = z.object({
+  accountId: z.string().min(2).max(50),
+  categoryId: z.string().min(2).max(50),
+  type: z.string(),
+  amount: z.number().min(4),
+  description: z.string().min(6),
+  date: z.string(),
+});
+
+const TransactionForm = ({
+  transaction,
+}: {
+  transaction?: UpdateTransaction;
+}) => {
+  const { createNewTransaction, isLoading, updateTransaction } =
+    useTransactions();
+  const { accounts } = useAccounts();
+  const { categories } = useCategories();
+
+  console.log(transaction);
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(TransactionFormSchema),
     defaultValues: {
-      accountId: "",
-      categoryId: "",
-      type: "",
-      amount: 0,
-      description: "",
-      date: "",
+      accountId: transaction?.accountId._id || "",
+      categoryId: transaction?.categoryId._id || "",
+      type: transaction?.type || "",
+      amount: transaction?.amount || 0,
+      description: transaction?.description || "",
+      date: transaction?.date
+        ? format(new Date(transaction?.date), "yyyy-MM-dd")
+        : "",
     },
   });
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setLoading(true);
 
+  useEffect(() => {
+    if (transaction) {
+      form.reset({
+        accountId: transaction.accountId._id,
+        categoryId: transaction.categoryId._id,
+        type: transaction.type,
+        amount: transaction.amount,
+        description: transaction.description,
+        date: format(new Date(transaction?.date), "yyyy-MM-dd"),
+      });
+    }
+  }, [transaction, form]);
+
+  const onSubmit = async (values: z.infer<typeof TransactionFormSchema>) => {
     try {
-      console.log("values===", values);
+      if (transaction) {
+        updateTransaction(transaction._id, values);
+      }
+      createNewTransaction({
+        accountId: values.accountId || null,
+        categoryId: values.categoryId,
+        type: values.type,
+        amount: values.amount,
+        description: values.description,
+        date: values.date,
+      });
     } catch (error) {
-    } finally {
+      console.log("error", error);
     }
   };
+
   return (
     <div className="max-w-[36rem] w-full h-fit p-5 rounded-lg">
       <Form {...form}>
         <form
-          action=""
           className="flex flex-col justify-center h-full gap-3"
           onSubmit={form.handleSubmit(onSubmit)}
         >
-          <h1 className="text-center font-semibold">Create Account</h1>
+          <h1 className="text-center font-semibold">Create Transaction</h1>
           <FormField
             control={form.control}
             name="description"
             render={({ field }) => (
               <FormItem>
-                <div className="">
-                  <FormControl>
-                    <Textarea
-                      placeholder="Enter Descrition"
-                      className=""
-                      {...field}
-                    />
-                  </FormControl>
-                </div>
+                <FormControl>
+                  <Textarea placeholder="Enter Description" {...field} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -89,20 +116,17 @@ const TransactionForm = () => {
             name="type"
             render={({ field }) => (
               <FormItem>
-                <div className="">
-                  <FormControl>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="z-[2000]">
-                        <SelectValue placeholder="Select Account Type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="cash">Cash Account</SelectItem>
-                        <SelectItem value="momo">Mobile Money</SelectItem>
-                        <SelectItem value="bank">Bank Account</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                </div>
+                <FormControl>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Transaction Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="expense">Expense</SelectItem>
+                      <SelectItem value="income">Income</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -112,64 +136,60 @@ const TransactionForm = () => {
             name="accountId"
             render={({ field }) => (
               <FormItem>
-                <div className="">
-                  <FormControl>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="z-[2000]">
-                        <SelectValue placeholder="Select Account" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="account7">account7</SelectItem>
-                        <SelectItem value="account8">account8</SelectItem>
-                        <SelectItem value="account9">account9</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                </div>
+                <FormControl>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Account" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts.map((account) => (
+                        <SelectItem key={account._id} value={account._id || ""}>
+                          {account.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="categoryId"
             render={({ field }) => (
               <FormItem>
-                <div className="">
-                  <FormControl>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="z-[2000]">
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="category7">category7</SelectItem>
-                        <SelectItem value="category8">category8</SelectItem>
-                        <SelectItem value="category9">category9</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                </div>
+                <FormControl>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat._id} value={cat._id || ""}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="amount"
             render={({ field }) => (
               <FormItem>
-                <div className="">
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter Transaction Account"
-                      className=""
-                      {...field}
-                    />
-                  </FormControl>
-                </div>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="Enter Transaction Amount"
+                    {...field}
+                    onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -179,22 +199,32 @@ const TransactionForm = () => {
             name="date"
             render={({ field }) => (
               <FormItem>
-                <div className="">
-                  <FormControl>
-                    <Input
-                      type="date"
-                      placeholder="Enter Transaction Date"
-                      className=""
-                      {...field}
-                    />
-                  </FormControl>
-                </div>
+                <FormControl>
+                  <Input
+                    type="date"
+                    placeholder="Enter Transaction Date"
+                    {...field}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button type="submit" className="bg-primary mt-4" disabled={loading}>
-            Create Transaction
+          <Button
+            type="submit"
+            className="bg-primary mt-4"
+            disabled={isLoading}
+          >
+            {transaction ? "Update Transaction":"Create Transaction"}
+            {isLoading && (
+              <Image
+                src="/icons/loader.svg"
+                alt=""
+                width={20}
+                height={20}
+                className="ml-1 animate-spin"
+              />
+            )}
           </Button>
         </form>
       </Form>

@@ -3,6 +3,7 @@ import {
   allUserCategoriesService,
   createCategoryService,
   deleteCategoryService,
+  getCategoryService,
   updateCategoryService,
 } from "../services/category.service";
 import { UpdateCategoryPayload } from "../../types";
@@ -91,3 +92,18 @@ export const deleteCategory = async (
     next(error)
   }
 };
+
+export const getCategory=async(req:Request,res:Response,next:NextFunction)=>{
+  const userId=req.user?._id
+  const categoryId=req.params.id;
+  try{
+      if(!userId){
+          return res.status(401).json({message:"User must be Logged In!"})
+      }
+      const category = await getCategoryService(userId, categoryId);
+      return res.status(200).json(category);
+  }
+  catch(error){
+      next(error)
+  }
+}

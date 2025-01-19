@@ -3,6 +3,7 @@ import {
   allBudgetsService,
   createBudgetService,
   deleteBudgetService,
+  getBudgetService,
   updateBudgetService,
   updateSpendingBudgetService,
 } from "../services/budget.service";
@@ -102,4 +103,19 @@ export const deleteBudget=async(req:Request,res:Response,next:NextFunction)=>{
     catch(error){
         next(error)
     }
+}
+
+export const getBudget=async(req:Request,res:Response,next:NextFunction)=>{
+  const userId=req.user?._id
+  const budgetId=req.params.id;
+  try{
+      if(!userId){
+          return res.status(401).json({message:"User must be Logged In!"})
+      }
+      const budget = await getBudgetService(userId, budgetId);
+      return res.status(200).json(budget);
+  }
+  catch(error){
+      next(error)
+  }
 }

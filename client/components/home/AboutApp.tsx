@@ -1,10 +1,14 @@
+"use client"
 import React from "react";
 import { AnimatedTooltip } from "../ui/animated-tooltip";
 import { people } from "@/constants/people";
 import { features } from "@/constants/features";
 import FeatureCard from "../ui/FeatureCard";
+import Link from "next/link";
+import { useUsers } from "@/contexts/AuthProvider";
 
 const AboutApp = () => {
+  const {user}=useUsers()
   return (
     <section className="flex w-screen min-h-screen pb-20 md:px-0 px-4 text-center flex-col justify-center items-center bg-primary text-white md:pt-[30rem] pt-[16rem]">
       <h1 className="md:text-5xl text-2xl font-medium mb-4">
@@ -32,9 +36,12 @@ const AboutApp = () => {
             goals, whether it's debt management, savings growth, or budget
             optimization.
           </p>
-          <button className="bg-white text-primary font-semibold hover:bg-neutral-900 hover:text-white py-2 px-4 rounded-full">
+          <Link
+            href={`${user ? "/dashboard" : "/sign-up"}`}
+            className="bg-white text-primary font-semibold hover:bg-neutral-900 hover:text-white py-2 px-4 rounded-full"
+          >
             Get Started
-          </button>
+          </Link>
         </div>
         <div className="flex flex-col items-start w-full">
           <h1 className="text-2xl font-semibold mb-12">

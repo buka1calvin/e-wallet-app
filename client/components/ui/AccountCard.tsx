@@ -1,10 +1,15 @@
+import { useAccounts } from '@/contexts/AccountsProvider'
 import { AccountProps } from '@/types'
 import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import React, { FC } from 'react'
 
 
-const AccountCard:FC<AccountProps> = ({name,type,balance,accountNumber,id}) => {
+const AccountCard:FC<AccountProps> = ({name,type,balance,accountNumber,_id}) => {
+  const {deleteAccount}=useAccounts()
+  const handleDelete=(id:string)=>{
+    deleteAccount(id)
+  }
   return (
 <div className="bg-white p-2 text-sm text-neutral-700 border flex flex-col gap-3">
             <div className="flex items-center justify-between">
@@ -32,8 +37,8 @@ const AccountCard:FC<AccountProps> = ({name,type,balance,accountNumber,id}) => {
               <p className="text-xs text-neutral-500">Total Amount</p>
             </div>
             <div className="flex justify-between">
-              <button className="text-red-600">Remove</button>
-              <Link href={`/dashboard/balances/${id}`} className="flex items-center bg-secondary text-white px-2 text-sm py-1">
+              <button className="text-red-600" onClick={()=>handleDelete(_id || "")}>Remove</button>
+              <Link href={`/dashboard/balances/${_id}`} className="flex items-center bg-secondary text-white px-2 text-sm py-1">
                 Details{" "}
                 <ChevronRight className="text-sm" size={20} />
               </Link>

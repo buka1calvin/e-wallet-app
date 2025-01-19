@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { filters } from "@/constants/requests";
 import { cn } from "@/lib/utils";
 import React, { FC, useState } from "react";
+import CategoryForm from "./CreateCategory";
 
 interface CatFilter {
   handleActive: (filter: string) => void;
@@ -38,7 +39,7 @@ const CategoriessHeader: FC<CatFilter> = ({ handleActive }) => {
           customStyle="bg-primary w-full"
           button="Create Category +"
         >
-          <div className=""></div>
+          <CategoryForm/>
         </CustomDialog>
       </div>
     </div>

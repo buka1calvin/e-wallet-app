@@ -5,8 +5,8 @@ import { createCustomError } from "../utils/errorUtils";
 export const createCategoryService = async (data: CategoryPayload) => {
   const { userId, name, type, subCategories } = data;
   const categoryExist = await Category.findOne({ userId, name });
-
-  if (!categoryExist) {
+  console.log("existing category",categoryExist)
+  if (categoryExist) {
     throw createCustomError(
       "category exist",
       `category with name=${name} already Exist!`,
@@ -66,3 +66,17 @@ export const deleteCategoryService=async(userId:string,catId:string)=>{
         catId
     }
 }
+
+export const getCategoryService = async (userId: string, categoryId: string) => {
+  const categoryExist = await Category.findOne({ userId, _id: categoryId })
+    .populate("userId", "firstName lastName")
+  if (!categoryExist) {
+    throw createCustomError(
+      "nocategoryFound",
+      `No category Found With Id=${categoryId}`,
+      404
+    );
+  }
+
+  return categoryExist;
+};

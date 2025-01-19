@@ -57,8 +57,8 @@ export const allBudgetsService = async (userId: string) => {
     const remaining = budget.amount - budget.spent;
     return {
       _id: budget._id,
-      name:budget.name,
-      description:budget.description,
+      name: budget.name,
+      description: budget.description,
       category: budget.categoryId,
       account: budget.accountId,
       isGlobal: budget.isGlobal,
@@ -145,4 +145,20 @@ export const deleteBudgetService = async (userId: string, budgetId: string) => {
     message: "Budget Deleted Successfully!",
     budgetId,
   };
+};
+
+export const getBudgetService = async (userId: string, budgetId: string) => {
+  const budgetExist = await Budget.findOne({ userId, _id: budgetId })
+    .populate("userId", "firstName lastName")
+    .populate("accountId", "name")
+    .populate("categoryId", "name subCategories");
+  if (!budgetExist) {
+    throw createCustomError(
+      "noBudgetFound",
+      `No Budget Found With Id=${budgetId}`,
+      404
+    );
+  }
+
+  return budgetExist;
 };

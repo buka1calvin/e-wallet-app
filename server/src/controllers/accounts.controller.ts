@@ -3,6 +3,7 @@ import {
   allUserAccountsService,
   createAccountSevice,
   deleteAccountService,
+  getAccountService,
   updateAccountService,
 } from "../services/account.service";
 import { UpdateAccountPayload } from "../../types";
@@ -30,7 +31,7 @@ export const createAccount = async (
       .status(201)
       .json({
         message: "new Account Created Successfully!",
-        account: newAccount,
+        newAccount,
       });
   } catch (error) {
     next(error);
@@ -49,7 +50,7 @@ export const getAllUserAccounts = async (
     }
 
     const allAccounts = await allUserAccountsService(userId);
-    return res.status(200).json({ accounts: allAccounts });
+    return res.status(200).json( allAccounts);
   } catch (error) {
     next(error);
   }
@@ -93,4 +94,19 @@ export const deleteAccount=async(req:Request,res:Response,next:NextFunction)=>{
     catch(error){
         next(error)
     }
+}
+
+export const getAccount=async(req:Request,res:Response,next:NextFunction)=>{
+  const userId=req.user?._id
+  const accountId=req.params.id;
+  try{
+      if(!userId){
+          return res.status(401).json({message:"User must be Logged In!"})
+      }
+      const account = await getAccountService(userId, accountId);
+      return res.status(200).json(account);
+  }
+  catch(error){
+      next(error)
+  }
 }

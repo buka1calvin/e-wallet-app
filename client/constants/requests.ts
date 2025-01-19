@@ -287,3 +287,22 @@ export const TransDropDowns=[
     onClick: () => console.log("Delete Transaction clicked"),
   },
 ]
+
+export const BudgetDropDowns=[
+  {
+    label: "View Details",
+    link: () => "/",
+  },
+  {
+    label: "Add Spending",
+    onClick: () => console.log("add Spending clicked"),
+  },
+  {
+    label: "Edit Budget",
+    onClick: () => console.log("add Spending clicked"),
+  },
+  {
+    label: "Delete Transaction",
+    onClick: () => console.log("Delete Transaction clicked"),
+  },
+]

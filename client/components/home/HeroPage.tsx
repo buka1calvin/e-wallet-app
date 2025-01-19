@@ -3,6 +3,7 @@ import ButtonOne from "../ui/ButtonOne";
 import Image from "next/image";
 
 const HeroPage = () => {
+  
   return (
     <section className="max-h-[40rem] h-screen w-screen rounded-md flex md:items-center md:justify-center bg-white dark:bg-black/[0.96] relative">
       <div className="overflow-hidden h-full max-h-[40rem] relative w-full flex md:items-center md:justify-center">
@@ -70,7 +71,7 @@ const HeroPage = () => {
           />
         </svg>
       <div className=" p-4 max-w-7xl  mx-auto relative z-10  w-full pt-20 md:pt-0 flex flex-col justify-center items-center">
-        <h2 className="text-4xl font-semibold bg-clip-text bg-gradient-to-b text-transparent from-neutral-500 to-neutral-900">
+        <h2 className="text-4xl font-semibold bg-clip-text bg-gradient-to-b text-transparent from-secondary to-primary">
           Welcome
         </h2>
         <h1 className="text-4xl md:text-7xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-500 to-neutral-900">
